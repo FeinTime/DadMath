@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Adventure Quest</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="logo">DadMath</div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="game.html">Math Adventure Quest</a></li>
+                <li><a href="#">Math Games</a></li>
+                <li><a href="#">Educational Resources</a></li>
+                <li><a href="#">Community and Support</a></li>
+                <li><a href="#">Events and Activities</a></li>
+                <li><a href="#">Blog</a></li>
+                <li><a href="#">DIY Projects</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <!-- Game Section -->
+        <section id="game" class="section">
+            <h2>Math Adventure Quest</h2>
+            <div id="story" class="story">
+                <p>Welcome to the Math Adventure Quest! Solve the math questions to help your character progress through the adventure.</p>
+            </div>
+
+            <!-- Score Display -->
+            <div id="score" style="margin-bottom: 20px; font-size: 18px;">Score: 0/0 (0%)</div>
+
+            <!-- Question -->
+            <div id="question-container" class="question-container">
+                <p id="question"></p>
+                <button class="answer-btn" id="answer1"></button>
+                <button class="answer-btn" id="answer2"></button>
+                <button class="answer-btn" id="answer3"></button>
+                <button class="answer-btn" id="answer4"></button>
+            </div>
+
+            <!-- Feedback -->
+            <div id="feedback-container">
+                <p id="feedback"></p>
+            </div>
+
+            <!-- Next Question Button -->
+            <button id="next-question" onclick="nextQuestion()" style="display: none;">Next Question</button>
+        </section>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 DadMath</p>
+    </footer>
+
+    <script src="scripts.js"></script>
+</body>
+</html>
