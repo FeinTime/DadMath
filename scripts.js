@@ -1,13 +1,15 @@
-// scripts.js
+// Game Logic: Math Adventure Quest and Leaderboard
 
-let correctCount = 0; // Number of correct answers
-let totalCount = 0;   // Total number of questions answered
+let correctCount = 0;
+let totalCount = 0;
+let startTime; // To track the start time of the game
+let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || []; // Load leaderboard from local storage
 
 // Function to generate a random math question
 function generateQuestion() {
-    const num1 = Math.floor(Math.random() * 20) + 1; // Random number between 1 and 20
+    const num1 = Math.floor(Math.random() * 20) + 1;
     const num2 = Math.floor(Math.random() * 20) + 1;
-    const operations = ["+", "-", "*", "/"];
+    const operations = ["+", "-", "*"];
     const operation = operations[Math.floor(Math.random() * operations.length)];
 
     let questionText;
@@ -23,13 +25,8 @@ function generateQuestion() {
             correctAnswer = num1 - num2;
             break;
         case "*":
-            questionText = `What is ${num1} x ${num2}?`;
+            questionText = `What is ${num1} × ${num2}?`;
             correctAnswer = num1 * num2;
-            break;
-        case "/":
-            const dividend = num1 * num2;
-            questionText = `What is ${dividend} ÷ ${num1}?`;
-            correctAnswer = num2;
             break;
     }
 
@@ -46,62 +43,182 @@ function generateQuestion() {
     return {
         question: questionText,
         answers: answers,
-        correctAnswer: answers.indexOf(correctAnswer)
+        correctAnswer: answers.indexOf(correctAnswer),
     };
 }
 
-let currentQuestion;
-
-// Function to display the current question and answers
 function showQuestion() {
-    currentQuestion = generateQuestion();
-    document.getElementById("question").innerText = currentQuestion.question;
-    currentQuestion.answers.forEach((answer, index) => {
-        document.getElementById(`answer${index + 1}`).innerText = answer;
+    const question = generateQuestion();
+    document.getElementById("question").innerText = question.question;
+    question.answers.forEach((answer, index) => {
+        const btn = document.getElementById(`answer${index + 1}`);
+        btn.innerText = answer;
+        btn.className = "answer-btn"; // Reset styles
+        btn.onclick = () => handleAnswer(index, question.correctAnswer, btn);
     });
-    document.getElementById("feedback").innerText = ""; // Clear feedback
-    document.getElementById("next-question").style.display = "none"; // Hide next button
 }
 
-// Function to check the selected answer
-function checkAnswer(answerIndex) {
-    totalCount++; // Increment total questions answered
-    const feedback = document.getElementById("feedback");
-
-    if (answerIndex === currentQuestion.correctAnswer) {
-        correctCount++; // Increment correct answers
-        feedback.innerText = "Correct! Great job!";
+function handleAnswer(index, correctIndex, btn) {
+    if (index === correctIndex) {
+        correctCount++;
+        btn.classList.add("correct");
     } else {
-        feedback.innerText = "Oops! That's not right. Try again!";
+        correctCount = Math.max(correctCount - 1, 0);
+        btn.classList.add("incorrect");
     }
 
-    // Update score and percentage
-    const percentage = ((correctCount / totalCount) * 100).toFixed(2);
-    document.getElementById("score").innerText = `Score: ${correctCount}/${totalCount} (${percentage}%)`;
+    updateProgress();
 
-    document.getElementById("next-question").style.display = "block"; // Show next button
+    setTimeout(() => {
+        if (correctCount < 10) {
+            showQuestion();
+        } else {
+            completeGame();
+        }
+    }, 1000); // Automatically move to the next question
 }
 
-// Add event listeners for answer buttons
-document.getElementById("answer1").addEventListener("click", () => checkAnswer(0));
-document.getElementById("answer2").addEventListener("click", () => checkAnswer(1));
-document.getElementById("answer3").addEventListener("click", () => checkAnswer(2));
-document.getElementById("answer4").addEventListener("click", () => checkAnswer(3));
+function updateProgress() {
+    const progress = (correctCount / 10) * 100;
+    document.getElementById("progress-bar").style.width = `${progress}%`;
+    document.getElementById("score").innerText = `Score: ${correctCount}/10`;
+}
 
-// Function to load the next question
-function nextQuestion() {
-    showQuestion(); // Generate and display a new question
+function completeGame() {
+    const endTime = Date.now();
+    const elapsedTime = ((endTime - startTime) / 1000).toFixed(2); // Time in seconds
+    const username = prompt("Congratulations! Enter your name to save your score:");
+
+    if (username) {
+        saveToLeaderboard(username, elapsedTime);
+    }
+    resetGame();
+}
+
+function saveToLeaderboard(username, time) {
+    leaderboard.push({ username, time });
+    leaderboard.sort((a, b) => a.time - b.time); // Sort by time
+    leaderboard = leaderboard.slice(0, 5); // Keep only the top 5
+    localStorage.setItem("leaderboard", JSON.stringify(leaderboard)); // Save to local storage
+    displayLeaderboard();
+}
+
+function displayLeaderboard() {
+    const leaderboardList = document.getElementById("leaderboard-list");
+    leaderboardList.innerHTML = "";
+    leaderboard.forEach((entry, index) => {
+        leaderboardList.innerHTML += `<li>${index + 1}. ${entry.username} - ${entry.time}s</li>`;
+    });
+}
+
+function resetGame() {
+    correctCount = 0;
+    totalCount = 0;
+    updateProgress();
+    startGame();
+}
+
+// Sidebar toggle for mobile view
+function toggleSidebar() {
+    document.querySelector(".sidebar").classList.toggle("minimized");
+}
+
+// Start the game
+function startGame() {
+    startTime = Date.now(); // Record the start time
+    showQuestion();
 }
 
 // Initialize the game
-showQuestion();
+startGame();
+displayLeaderboard();
 
-// Handle "Coming Soon" for inactive links
-document.querySelectorAll('.sidebar nav ul li a').forEach(link => {
-    link.addEventListener("click", (event) => {
-        if (link.getAttribute("href") === "#") {
-            event.preventDefault();
-            alert("Coming Soon!");
-        }
+// Community Section: Allow users to post questions and answers
+
+document.addEventListener("DOMContentLoaded", loadQuestions);
+document.getElementById("submitQuestion").addEventListener("click", submitQuestion);
+
+function submitQuestion() {
+    const questionInput = document.getElementById("questionInput");
+    const questionText = questionInput.value.trim();
+
+    if (questionText) {
+        const question = {
+            text: questionText,
+            answers: [],
+            id: Date.now(), // Unique ID based on timestamp
+        };
+
+        // Store question in localStorage
+        let questions = JSON.parse(localStorage.getItem("questions")) || [];
+        questions.push(question);
+        localStorage.setItem("questions", JSON.stringify(questions));
+
+        // Reset input field
+        questionInput.value = "";
+
+        // Reload questions
+        loadQuestions();
+    } else {
+        alert("Please enter a question before submitting!");
+    }
+}
+
+function loadQuestions() {
+    const questionsContainer = document.getElementById("questionsContainer");
+    questionsContainer.innerHTML = ""; // Clear existing questions
+
+    let questions = JSON.parse(localStorage.getItem("questions")) || [];
+
+    // Display each question
+    questions.forEach(question => {
+        const questionDiv = document.createElement("div");
+        questionDiv.classList.add("question");
+
+        const questionText = document.createElement("p");
+        questionText.innerHTML = `<strong>Q:</strong> ${question.text}`;
+        questionDiv.appendChild(questionText);
+
+        // Display answers
+        const answersDiv = document.createElement("div");
+        answersDiv.classList.add("answers");
+        question.answers.forEach((answer, index) => {
+            const answerPara = document.createElement("p");
+            answerPara.innerHTML = `<strong>A${index + 1}:</strong> ${answer}`;
+            answersDiv.appendChild(answerPara);
+        });
+
+        // Add a button to add an answer
+        const answerInput = document.createElement("textarea");
+        answerInput.placeholder = "Your answer here...";
+        questionDiv.appendChild(answerInput);
+
+        const submitAnswerButton = document.createElement("button");
+        submitAnswerButton.textContent = "Submit Answer";
+        submitAnswerButton.addEventListener("click", () => submitAnswer(question.id, answerInput.value.trim()));
+        questionDiv.appendChild(submitAnswerButton);
+
+        questionDiv.appendChild(answersDiv);
+        questionsContainer.appendChild(questionDiv);
     });
-});
+}
+
+function submitAnswer(questionId, answerText) {
+    if (answerText) {
+        let questions = JSON.parse(localStorage.getItem("questions")) || [];
+
+        // Find the question by ID and add the answer
+        const question = questions.find(q => q.id === questionId);
+        if (question) {
+            question.answers.push(answerText);
+
+            // Save the updated questions array to localStorage
+            localStorage.setItem("questions", JSON.stringify(questions));
+
+            // Reload the questions to show the new answer
+            loadQuestions();
+        }
+    } else {
+        alert("Please enter an answer before submitting!");
+    }
+}

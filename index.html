@@ -15,8 +15,8 @@
                 <li><a href="index.html">Home</a></li>
                 <li><a href="game.html">Math Adventure Quest</a></li>
                 <li><a href="#">Math Games</a></li>
-                <li><a href="#">Educational Resources</a></li>
-                <li><a href="#">Community and Support</a></li>
+                <li><a href="resources.html">Educational Resources</a></li>
+                <li><a href="community.html">Community and Support</a></li> <!-- Updated link -->
                 <li><a href="#">Events and Activities</a></li>
                 <li><a href="#">Blog</a></li>
                 <li><a href="#">DIY Projects</a></li>
@@ -26,7 +26,6 @@
 
     <!-- Main Content Area -->
     <div class="main-content">
-        <!-- Header Section -->
         <header>
             <h2>Welcome to DadMath!</h2>
             <p>Your ultimate resource for engaging math activities and adventures for dads and kids!</p>
@@ -50,17 +49,5 @@
     <footer>
         <p>&copy; 2024 DadMath</p>
     </footer>
-
-    <script>
-        // Add "Coming Soon!" popup for inactive links
-        document.querySelectorAll('.sidebar nav ul li a').forEach(link => {
-            link.addEventListener("click", (event) => {
-                if (link.getAttribute("href") === "#") {
-                    event.preventDefault();
-                    alert("Coming Soon!");
-                }
-            });
-        });
-    </script>
 </body>
 </html>
